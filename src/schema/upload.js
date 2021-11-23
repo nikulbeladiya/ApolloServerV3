@@ -10,7 +10,7 @@ const uploadSchema = gql`
   }
 
   type Mutation {
-    singleUpload(file: Upload!): File!
+    fileUpload(file: Upload!): String
   }
 `;
 

@@ -1,20 +1,27 @@
-import fs from 'fs'
+import { join, parse } from "path";
+import { createWriteStream } from "fs";
+import { ApolloError } from "apollo-server-express";
 import { GraphQLUpload } from 'graphql-upload'
-const stream = require('stream').promises;
 
 export default {
-    Upload: GraphQLUpload,
+  Upload: GraphQLUpload,
+  Mutation: {
+    fileUpload: async (_, { file }) => {
+      try {
+        const { filename, createReadStream } = await file;
 
-    Mutation: {
-      singleUpload: async (parent, { file }) => {
-        const { createReadStream, filename, mimetype, encoding } = await file;
-        const readStream = createReadStream();
-  
-        const out = fs.createWriteStream('local-file-output.txt');
-        readStream.pipe(out);
-        await stream.finished(out);
-  
-        return { filename, mimetype, encoding };
-      },
+        let stream = createReadStream();
+        let { ext } = parse(filename);
+
+        let serverFile = `${process.env.ASSETS_STORAGE}${Date.now()}${ext}`
+        let writeStream = await createWriteStream(serverFile);
+        await stream.pipe(writeStream);
+
+        serverFile = `${serverFile.split("ASSETS")[1]}`;
+        return serverFile;
+      } catch (err) {
+        throw new ApolloError(err.message);
+      }
     },
-  };
+  },
+};

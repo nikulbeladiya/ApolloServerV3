@@ -128,7 +128,7 @@ async function startServer() {
   );
 
   await server.start();
-  //app.use(graphqlUploadExpress());
+  app.use(graphqlUploadExpress());
   server.applyMiddleware({ app });
 
   connectDB().then(async () => {
